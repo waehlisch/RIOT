@@ -1,3 +1,6 @@
+ifneq (,$(filter posix_netif,$(USEMODULE)))
+    DIRS += posix/netif
+endif
 ifneq (,$(filter pnet,$(USEMODULE)))
     DIRS += posix/pnet
 endif

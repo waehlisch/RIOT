@@ -9,6 +9,9 @@ endif
 ifneq (,$(filter mtd_native,$(USEMODULE)))
 	DIRS += mtd
 endif
+ifneq (,$(filter trace,$(USEMODULE)))
+	DIRS += trace
+endif
 
 include $(RIOTBASE)/Makefile.base
 

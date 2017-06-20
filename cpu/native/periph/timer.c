@@ -49,7 +49,7 @@
 
 #define NATIVE_TIMER_SPEED          (1000000)
 #define NATIVE_TIMER_DEFAULT_SCALE  (0)
-
+/* variable to speed-up or slow-down timer for simulation */
 int native_timer_scale = NATIVE_TIMER_DEFAULT_SCALE;
 
 static unsigned long time_null;
@@ -65,7 +65,14 @@ static struct itimerval itv;
 static unsigned long ts2ticks(struct timespec *tp)
 {
     /* TODO: check for overflow */
-    return (((tp->tv_sec * NATIVE_TIMER_SPEED) + (tp->tv_nsec / 1000)) << native_timer_scale);
+    if (native_timer_scale < 0) {
+        return (((tp->tv_sec * NATIVE_TIMER_SPEED) + (tp->tv_nsec / 1000))
+                >> (-native_timer_scale));
+    }
+    else {
+        return (((tp->tv_sec * NATIVE_TIMER_SPEED) + (tp->tv_nsec / 1000))
+                << native_timer_scale);
+    }
 }
 
 /**
@@ -112,7 +119,13 @@ static void do_timer_set(unsigned int offset)
         offset = NATIVE_TIMER_MIN_RES;
     }
 
-    offset >>= native_timer_scale;
+    if (native_timer_scale < 0) {
+        offset <<= -native_timer_scale;
+    }
+    else {
+        offset >>= native_timer_scale;
+    }
+
     memset(&itv, 0, sizeof(itv));
     itv.it_value.tv_sec = (offset / 1000000);
     itv.it_value.tv_usec = offset % 1000000;

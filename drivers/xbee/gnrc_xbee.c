@@ -178,7 +178,6 @@ static const gnrc_netif2_ops_t _xbee_ops = {
     .recv = xbee_adpt_recv,
     .get = gnrc_netif2_get_from_netdev,
     .set = gnrc_netif2_set_from_netdev,
-    .msg_handler = NULL,
 };
 
 gnrc_netif2_t *gnrc_netif2_xbee_create(char *stack, int stacksize,

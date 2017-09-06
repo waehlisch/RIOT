@@ -70,6 +70,23 @@ static gnrc_pktsnip_t *_make_netif_hdr(uint8_t *mhr)
     return snip;
 }
 
+#if MODULE_GNRC_NETIF2_DEDUP_BCAST
+static inline bool _already_received(netdev_t *dev, gnrc_netif_hdr_t *netif,
+                                     uint8_t *mhr)
+{
+    const uint8_t seq = ieee802154_get_seq(mhr);
+
+    return  (dev->last_pkt.seq == seq) &&
+            (((dev->last_pkt.was_bcast) && (netif->flags & GNRC_NETIF_HDR_FLAGS_BROADCAST)) ||
+             ((dev->last_pkt.dst_len == netif->dst_l2addr_len) &&
+              (memcmp(dev->last_pkt.dst, gnrc_netif_hdr_get_dst_addr(netif),
+                      netif->dst_l2addr_len) == 0))) &&
+            (dev->last_pkt.src_len == netif->src_l2addr_len) &&
+            (memcmp(dev->last_pkt.src, gnrc_netif_hdr_get_src_addr(netif),
+                    netif->src_l2addr_len) == 0);
+}
+#endif /* MODULE_GNRC_NETIF2_DEDUP_BCAST */
+
 static gnrc_pktsnip_t *_recv(gnrc_netif2_t *netif)
 {
     netdev_t *dev = netif->dev;
@@ -131,17 +148,20 @@ static gnrc_pktsnip_t *_recv(gnrc_netif2_t *netif)
             }
 #endif
 #ifdef MODULE_GNRC_NETIF2_DEDUP_BCAST
-            uint8_t seq = ieee802154_get_seq(ieee802154_hdr->data);
-
-            if ((hdr->flags & GNRC_NETIF_HDR_FLAGS_BROADCAST) &&
-                (dev->last_pkt.seq == seq) &&
-                (dev->last_pkt.src_len == hdr->src_l2addr_len) &&
-                (memcmp(dev->last_pkt.src, gnrc_netif_hdr_get_src_addr(hdr),
-                        hdr->src_l2addr_len))) {
+            if (_already_received(dev, hdr, ieee802154_hdr->data)) {
                 gnrc_pktbuf_release(pkt);
                 gnrc_pktbuf_release(netif_hdr);
                 DEBUG("_recv_ieee802154: packet dropped by broadcast deduplication\n");
                 return NULL;
+            }
+            dev->last_pkt.was_bcast = ((netif->flags & GNRC_NETIF_HDR_FLAGS_BROADCAST) != 0);
+            if (dev->last_pkt.was_bcast) {
+                dev->last_pkt.dst_len = 0;
+            }
+            else {
+                dev->last_pkt.was_bcast = 0;
+                memcpy(dev->last_pkt.dst, gnrc_netif_hdr_get_dst_addr(hdr));
+                dev->last_pkt.dst_len = hdr->dst_l2addr_len;
             }
             memcpy(dev->last_pkt.src, gnrc_netif_hdr_get_src_addr(hdr));
             dev->last_pkt.src_len = hdr->src_l2addr_len;

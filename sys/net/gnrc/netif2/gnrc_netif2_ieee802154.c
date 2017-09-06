@@ -130,6 +130,23 @@ static gnrc_pktsnip_t *_recv(gnrc_netif2_t *netif)
                 return NULL;
             }
 #endif
+#ifdef MODULE_GNRC_NETIF2_DEDUP_BCAST
+            uint8_t seq = ieee802154_get_seq(ieee802154_hdr->data);
+
+            if ((hdr->flags & GNRC_NETIF_HDR_FLAGS_BROADCAST) &&
+                (dev->last_pkt.seq == seq) &&
+                (dev->last_pkt.src_len == hdr->src_l2addr_len) &&
+                (memcmp(dev->last_pkt.src, gnrc_netif_hdr_get_src_addr(hdr),
+                        hdr->src_l2addr_len))) {
+                gnrc_pktbuf_release(pkt);
+                gnrc_pktbuf_release(netif_hdr);
+                DEBUG("_recv_ieee802154: packet dropped by broadcast deduplication\n");
+                return NULL;
+            }
+            memcpy(dev->last_pkt.src, gnrc_netif_hdr_get_src_addr(hdr));
+            dev->last_pkt.src_len = hdr->src_l2addr_len;
+            dev->seq = seq;
+#endif
 
             hdr->lqi = rx_info.lqi;
             hdr->rssi = rx_info.rssi;

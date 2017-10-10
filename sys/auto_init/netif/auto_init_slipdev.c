@@ -21,8 +21,12 @@
 
 #include "log.h"
 #include "board.h"
+#ifdef MODULE_GNRC_NETIF2
+#include "net/gnrc/netif2/raw.h"
+#else
 #include "net/gnrc/netdev.h"
 #include "net/gnrc/netdev/raw.h"
+#endif
 #include "net/gnrc.h"
 
 #include "slipdev.h"
@@ -36,11 +40,17 @@
  */
 #define SLIPDEV_STACKSIZE       (THREAD_STACKSIZE_DEFAULT)
 #ifndef SLIPDEV_PRIO
+#ifdef MODULE_GNRC_NETIF2
+#define SLIPDEV_PRIO            (GNRC_NETIF2_PRIO)
+#else
 #define SLIPDEV_PRIO            (GNRC_NETDEV_MAC_PRIO)
+#endif
 #endif
 
 static slipdev_t slipdevs[SLIPDEV_NUM];
+#ifndef MODULE_GNRC_NETIF2
 static gnrc_netdev_t gnrc_adpt[SLIPDEV_NUM];
+#endif
 static char _slipdev_stacks[SLIPDEV_NUM][SLIPDEV_STACKSIZE];
 
 void auto_init_slipdev(void)
@@ -51,6 +61,11 @@ void auto_init_slipdev(void)
         LOG_DEBUG("[auto_init_netif] initializing slip #%u\n", i);
 
         slipdev_setup(&slipdevs[i], p);
+#ifdef MODULE_GNRC_NETIF2
+        gnrc_netif2_raw_create(_slipdev_stacks[i], SLIPDEV_STACKSIZE,
+                               SLIPDEV_PRIO, "slipdev",
+                               (netdev_t *)&slipdevs[i]);
+#else
         kernel_pid_t res = gnrc_netdev_raw_init(&gnrc_adpt[i],
                                                 (netdev_t *)&slipdevs[i]);
 
@@ -61,6 +76,7 @@ void auto_init_slipdev(void)
             gnrc_netdev_init(_slipdev_stacks[i], SLIPDEV_STACKSIZE,
                              SLIPDEV_PRIO, "slipdev", &gnrc_adpt[i]);
         }
+#endif
     }
 }
 #else

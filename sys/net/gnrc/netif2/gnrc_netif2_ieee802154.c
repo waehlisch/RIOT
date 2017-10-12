@@ -150,15 +150,6 @@ static gnrc_pktsnip_t *_recv(gnrc_netif2_t *netif)
                 DEBUG("_recv_ieee802154: packet dropped by deduplication\n");
                 return NULL;
             }
-            dev->last_pkt.was_bcast = ((netif->flags & GNRC_NETIF_HDR_FLAGS_BROADCAST) != 0);
-            if (dev->last_pkt.was_bcast) {
-                dev->last_pkt.dst_len = 0;
-            }
-            else {
-                dev->last_pkt.was_bcast = 0;
-                memcpy(dev->last_pkt.dst, gnrc_netif_hdr_get_dst_addr(hdr));
-                dev->last_pkt.dst_len = hdr->dst_l2addr_len;
-            }
             memcpy(dev->last_pkt.src, gnrc_netif_hdr_get_src_addr(hdr));
             dev->last_pkt.src_len = hdr->src_l2addr_len;
             dev->seq = seq;

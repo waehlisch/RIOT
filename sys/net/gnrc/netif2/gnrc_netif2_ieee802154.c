@@ -70,7 +70,7 @@ static gnrc_pktsnip_t *_make_netif_hdr(uint8_t *mhr)
     return snip;
 }
 
-#if MODULE_GNRC_NETIF2_DEDUP_BCAST
+#if MODULE_GNRC_NETIF2_DEDUP
 static inline bool _already_received(netdev_t *dev, gnrc_netif_hdr_t *netif,
                                      uint8_t *mhr)
 {
@@ -81,7 +81,7 @@ static inline bool _already_received(netdev_t *dev, gnrc_netif_hdr_t *netif,
             (memcmp(dev->last_pkt.src, gnrc_netif_hdr_get_src_addr(netif),
                     netif->src_l2addr_len) == 0);
 }
-#endif /* MODULE_GNRC_NETIF2_DEDUP_BCAST */
+#endif /* MODULE_GNRC_NETIF2_DEDUP */
 
 static gnrc_pktsnip_t *_recv(gnrc_netif2_t *netif)
 {
@@ -143,7 +143,7 @@ static gnrc_pktsnip_t *_recv(gnrc_netif2_t *netif)
                 return NULL;
             }
 #endif
-#ifdef MODULE_GNRC_NETIF2_DEDUP_BCAST
+#ifdef MODULE_GNRC_NETIF2_DEDUP
             if (_already_received(dev, hdr, ieee802154_hdr->data)) {
                 gnrc_pktbuf_release(pkt);
                 gnrc_pktbuf_release(netif_hdr);

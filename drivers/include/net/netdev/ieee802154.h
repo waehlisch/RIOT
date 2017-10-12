@@ -108,7 +108,7 @@ typedef struct {
     uint8_t chan;                           /**< channel */
     uint16_t flags;                         /**< flags as defined above */
     /** @} */
-#ifdef MODULE_GNRC_NETIF2_DEDUP_BCAST
+#ifdef MODULE_GNRC_NETIF2_DEDUP
     struct {
         uint8_t src[IEEE802154_LONG_ADDRESS_LEN];   /**< source address */
         uint8_t src_len;                            /**< source address length */

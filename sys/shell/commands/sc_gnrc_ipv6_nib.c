@@ -150,7 +150,7 @@ static int _nib_prefix(int argc, char **argv)
         ipv6_addr_t pfx;
         unsigned iface = atoi(argv[3]);
         unsigned pfx_len = ipv6_addr_split_prefix(argv[4]);
-        unsigned valid_ltime = UINT32_MAX, pref_ltime = UINT32_MAX;
+        uint32_t valid_ltime = UINT32_MAX, pref_ltime = UINT32_MAX;
 
         if (ipv6_addr_from_str(&pfx, argv[4]) == NULL) {
             _usage_nib_prefix(argv);

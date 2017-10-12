@@ -110,11 +110,8 @@ typedef struct {
     /** @} */
 #ifdef MODULE_GNRC_NETIF2_DEDUP_BCAST
     struct {
-        uint8_t dst[IEEE802154_LONG_ADDRESS_LEN];   /**< destination address */
         uint8_t src[IEEE802154_LONG_ADDRESS_LEN];   /**< source address */
-        uint8_t dst_len;                            /**< destination address length */
         uint8_t src_len;                            /**< source address length */
-        uint8_t was_bcast;                          /**< indicates if dst was broadcast */
         uint8_t seq;                                /**< sequence number */
     } last_pkt;                             /**< last received packet information */
 #endif

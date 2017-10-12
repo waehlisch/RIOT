@@ -64,11 +64,8 @@ void auto_init_xbee(void)
 
         xbee_setup(&xbee_devs[i], &xbee_params[i]);
 #ifdef MODULE_GNRC_NETIF2
-        if (!gnrc_netif2_xbee_create(stacks[i], XBEE_MAC_STACKSIZE,
-                                     XBEE_MAC_PRIO, "xbee",
-                                     (netdev_t *)&xbee_devs[i])) {
-            LOG_ERROR("[auto_init_netif] error initializing xbee #%u\n", i);
-        }
+        gnrc_netif2_xbee_create(stacks[i], XBEE_MAC_STACKSIZE, XBEE_MAC_PRIO,
+                                "xbee", (netdev_t *)&xbee_devs[i]);
 #else
         gnrc_netdev_xbee_init(&gnrc_adpt[i], &xbee_devs[i]);
         gnrc_netdev_init(stacks[i], XBEE_MAC_STACKSIZE, XBEE_MAC_PRIO,
